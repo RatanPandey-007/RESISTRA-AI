@@ -1,6 +1,6 @@
 import { MLEvidence, MLModelInfo, ContributingSignal } from '../types/intelligence';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = ((import.meta as unknown as { env?: Record<string, string> }).env?.VITE_ML_API_URL as string) || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8000' : '');
 
 export interface MLPredictionParams {
   organism: string;
@@ -36,33 +36,34 @@ export async function getMLSurveillancePrediction(params: MLPredictionParams): P
     ? params.resistanceChange 
     : Math.round((params.resistanceRate - params.previousResistanceRate) * 10) / 10;
   
-  const payload = {
-    organism: params.organism,
-    antibiotic: params.antibiotic,
-    facility: params.facility || 'North Suburbs Health Zone',
-    region: params.region || 'Metro Central',
-    resistance_rate: params.resistanceRate,
-    previous_resistance_rate: params.previousResistanceRate,
-    resistance_change: change,
-    rolling_mean: params.rollingMean || params.previousResistanceRate,
-    rolling_std: params.rollingStd || 1.5,
-    trend_slope: params.trendSlope || Math.round((change / 3.0) * 100) / 100,
-    facility_count: params.facilityCount || 4,
-    reporting_volume: params.reportingVolume || 1800,
-    threshold_distance: params.thresholdDistance || (params.resistanceRate - 40.0)
-  };
+  if (API_BASE_URL) {
+    try {
+      const payload = {
+        organism: params.organism,
+        antibiotic: params.antibiotic,
+        facility: params.facility || 'North Suburbs Health Zone',
+        region: params.region || 'Metro Central',
+        resistance_rate: params.resistanceRate,
+        previous_resistance_rate: params.previousResistanceRate,
+        resistance_change: change,
+        rolling_mean: params.rollingMean || params.previousResistanceRate,
+        rolling_std: params.rollingStd || 1.5,
+        trend_slope: params.trendSlope || Math.round((change / 3.0) * 100) / 100,
+        facility_count: params.facilityCount || 4,
+        reporting_volume: params.reportingVolume || 1800,
+        threshold_distance: params.thresholdDistance || (params.resistanceRate - 40.0)
+      };
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1800);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1800);
 
-    const res = await fetch(`${API_BASE_URL}/predict`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
+      const res = await fetch(`${API_BASE_URL}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
@@ -89,6 +90,7 @@ export async function getMLSurveillancePrediction(params: MLPredictionParams): P
     // Graceful fallback to verified model parameters
     console.debug('[RESISTRA ML Adapter] FastAPI unreachable, executing local model bridge.', err);
   }
+}
 
   // Local Python model replication fallback for complete reliability
   return computeLocalModelInference(params, change);
@@ -176,41 +178,43 @@ function computeLocalModelInference(params: MLPredictionParams, change: number):
  * Returns model specifications, training parameters, and held-out test evaluation metrics.
  */
 export async function getMLModelInfo(): Promise<MLModelInfo> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+  if (API_BASE_URL) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
 
-    const res = await fetch(`${API_BASE_URL}/model-info`, { signal: controller.signal });
-    clearTimeout(timeoutId);
+      const res = await fetch(`${API_BASE_URL}/model-info`, { signal: controller.signal });
+      clearTimeout(timeoutId);
 
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        modelVersion: data.metadata?.model_version || 'resistra-prototype-v1',
-        datasetVersion: data.metadata?.dataset_version || 'v2.0-synthetic',
-        randomSeed: data.metadata?.random_seed || 42,
-        trainingTimestampUtc: data.metadata?.training_timestamp_utc || '2026-09-12T17:52:39Z',
-        modelTypeRisk: data.metadata?.model_type_risk || 'XGBClassifier',
-        modelTypeAnomaly: data.metadata?.model_type_anomaly || 'IsolationForest',
-        classificationMetrics: {
-          accuracy: data.evaluation_metrics?.classification_metrics?.accuracy || VERIFIED_TEST_METRICS.accuracy,
-          precision: data.evaluation_metrics?.classification_metrics?.precision || VERIFIED_TEST_METRICS.precision,
-          recall: data.evaluation_metrics?.classification_metrics?.recall || VERIFIED_TEST_METRICS.recall,
-          f1Score: data.evaluation_metrics?.classification_metrics?.f1_score || VERIFIED_TEST_METRICS.f1Score,
-          rocAuc: data.evaluation_metrics?.classification_metrics?.roc_auc || VERIFIED_TEST_METRICS.rocAuc
-        },
-        topFeatureImportances: data.metadata?.top_feature_importances || {
-          trend_slope: 0.3868,
-          resistance_change: 0.1087,
-          threshold_distance: 0.1032,
-          resistance_rate: 0.0297
-        },
-        featureDescriptions: data.metadata?.feature_descriptions || {},
-        disclaimer: 'Synthetic Demonstration Model — Evaluated on held-out synthetic test set. Not clinically validated.'
-      };
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          modelVersion: data.metadata?.model_version || 'resistra-prototype-v1',
+          datasetVersion: data.metadata?.dataset_version || 'v2.0-synthetic',
+          randomSeed: data.metadata?.random_seed || 42,
+          trainingTimestampUtc: data.metadata?.training_timestamp_utc || '2026-09-12T17:52:39Z',
+          modelTypeRisk: data.metadata?.model_type_risk || 'XGBClassifier',
+          modelTypeAnomaly: data.metadata?.model_type_anomaly || 'IsolationForest',
+          classificationMetrics: {
+            accuracy: data.evaluation_metrics?.classification_metrics?.accuracy || VERIFIED_TEST_METRICS.accuracy,
+            precision: data.evaluation_metrics?.classification_metrics?.precision || VERIFIED_TEST_METRICS.precision,
+            recall: data.evaluation_metrics?.classification_metrics?.recall || VERIFIED_TEST_METRICS.recall,
+            f1Score: data.evaluation_metrics?.classification_metrics?.f1_score || VERIFIED_TEST_METRICS.f1Score,
+            rocAuc: data.evaluation_metrics?.classification_metrics?.roc_auc || VERIFIED_TEST_METRICS.rocAuc
+          },
+          topFeatureImportances: data.metadata?.top_feature_importances || {
+            trend_slope: 0.3868,
+            resistance_change: 0.1087,
+            threshold_distance: 0.1032,
+            resistance_rate: 0.0297
+          },
+          featureDescriptions: data.metadata?.feature_descriptions || {},
+          disclaimer: 'Synthetic Demonstration Model — Evaluated on held-out synthetic test set. Not clinically validated.'
+        };
+      }
+    } catch (err) {
+      console.debug('[RESISTRA ML Adapter] Model info fallback active.', err);
     }
-  } catch (err) {
-    console.debug('[RESISTRA ML Adapter] Model info fallback active.', err);
   }
 
   return {
