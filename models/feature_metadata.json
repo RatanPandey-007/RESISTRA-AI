@@ -1,0 +1,90 @@
+{
+  "model_version": "resistra-prototype-v1",
+  "dataset_version": "v2.0-synthetic",
+  "random_seed": 42,
+  "training_timestamp_utc": "2026-09-12T17:52:39.039267+00:00",
+  "model_type_risk": "XGBClassifier",
+  "model_type_anomaly": "IsolationForest",
+  "numerical_features": [
+    "resistance_rate",
+    "previous_resistance_rate",
+    "resistance_change",
+    "rolling_mean",
+    "rolling_std",
+    "trend_slope",
+    "facility_count",
+    "reporting_volume",
+    "threshold_distance",
+    "rolling_deviation"
+  ],
+  "categorical_features": [
+    "organism",
+    "antibiotic",
+    "region"
+  ],
+  "anomaly_features": [
+    "resistance_change",
+    "trend_slope",
+    "threshold_distance",
+    "rolling_deviation",
+    "reporting_volume"
+  ],
+  "all_transformed_features": [
+    "resistance_rate",
+    "previous_resistance_rate",
+    "resistance_change",
+    "rolling_mean",
+    "rolling_std",
+    "trend_slope",
+    "facility_count",
+    "reporting_volume",
+    "threshold_distance",
+    "rolling_deviation",
+    "organism_Acinetobacter baumannii",
+    "organism_Enterococcus faecium",
+    "organism_Escherichia coli",
+    "organism_Klebsiella pneumoniae",
+    "organism_Pseudomonas aeruginosa",
+    "organism_Staphylococcus aureus",
+    "antibiotic_Ampicillin",
+    "antibiotic_Ceftriaxone",
+    "antibiotic_Ciprofloxacin",
+    "antibiotic_Colistin",
+    "antibiotic_Gentamicin",
+    "antibiotic_Meropenem",
+    "antibiotic_Vancomycin",
+    "region_East District",
+    "region_Metro Central",
+    "region_Metro North",
+    "region_West District"
+  ],
+  "top_feature_importances": {
+    "trend_slope": 0.38679999113082886,
+    "resistance_change": 0.10869999974966049,
+    "threshold_distance": 0.10320000350475311,
+    "organism_Acinetobacter baumannii": 0.03200000151991844,
+    "resistance_rate": 0.02969999983906746,
+    "previous_resistance_rate": 0.023900000378489494,
+    "rolling_std": 0.021800000220537186,
+    "rolling_deviation": 0.020400000736117363,
+    "organism_Enterococcus faecium": 0.019200000911951065,
+    "reporting_volume": 0.01889999955892563
+  },
+  "feature_descriptions": {
+    "resistance_rate": "Current measured AMR prevalence percentage [0.0 - 100.0%].",
+    "previous_resistance_rate": "Preceding surveillance period resistance rate [0.0 - 100.0%].",
+    "resistance_change": "Absolute percentage point change between periods (e.g. +17.0 percentage points).",
+    "rolling_mean": "Rolling 6-month baseline resistance mean.",
+    "rolling_std": "Rolling 6-month standard deviation measuring natural epidemiological drift.",
+    "trend_slope": "Directional gradient of the longitudinal regression line.",
+    "facility_count": "Number of reporting laboratories or clinics contributing to this cluster.",
+    "reporting_volume": "Total antimicrobial susceptibility tests performed across the region.",
+    "threshold_distance": "Observed rate minus critical WHO/CLSI surveillance cutoff threshold.",
+    "rolling_deviation": "Normalized Z-Score deviation from the rolling baseline."
+  },
+  "label_mapping": {
+    "0": "LOW_RISK",
+    "1": "HIGH_RISK"
+  },
+  "disclaimer": "Synthetic Demonstration Model \u2014 Prototype model, not clinically validated."
+}

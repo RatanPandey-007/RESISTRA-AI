@@ -1,0 +1,38 @@
+{
+  "dataset_metadata": {
+    "test_set_size": 500,
+    "test_positive_ratio": 0.276,
+    "evaluation_timestamp": "2026-09-12T23:33:04.594097"
+  },
+  "classification_metrics": {
+    "model_name": "XGBoost Classifier",
+    "accuracy": 0.952,
+    "precision": 0.9831,
+    "recall": 0.8406,
+    "f1_score": 0.9062,
+    "roc_auc": 0.9168,
+    "confusion_matrix": {
+      "true_negative": 360,
+      "false_positive": 2,
+      "false_negative": 22,
+      "true_positive": 116
+    }
+  },
+  "anomaly_detection_metrics": {
+    "model_name": "Isolation Forest",
+    "test_anomaly_rate_percent": 12.8,
+    "mean_anomaly_score": 38.17,
+    "median_anomaly_score": 35.34,
+    "p95_anomaly_score": 59.32
+  },
+  "demo_scenario_verification": {
+    "organism": "Escherichia coli",
+    "antibiotic": "Ciprofloxacin",
+    "prevalence_shift": "31% -> 48% (+17 percentage points)",
+    "model_predicted_risk": "HIGH_RISK",
+    "model_risk_probability": 0.8769000172615051,
+    "anomaly_detected": false,
+    "anomaly_score": 53.3
+  },
+  "disclaimer": "Synthetic Demonstration Model \u2014 Evaluated on held-out synthetic test set. Not clinically validated."
+}
